@@ -1,2 +1,2 @@
 # jenkins-git
-learning jenkins on Lynda
+learning jenkins on Lynda.com
