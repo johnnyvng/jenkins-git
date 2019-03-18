@@ -25,9 +25,9 @@ resource "oci_core_virtual_network" "vcn" {
 
 # ------ Create a new Internet Gateway
 
-resource "oci_core_internet_gateway" "CustIG" {
+resource "oci_core_internet_gateway" "IG" {
   compartment_id = "${var.compartment_ocid}"
-  display_name = "tf-demo01-internet-gateway"
+  display_name = "FFB-internet-gateway"
   vcn_id = "${oci_core_virtual_network.vcn.id}"
 }
 
@@ -35,13 +35,13 @@ resource "oci_core_internet_gateway" "CustIG" {
 
 # ------ Create a new Route Table
 
-resource "oci_core_route_table" "RouteTable" {
+resource "oci_core_route_table" "ProdRouteTable" {
   compartment_id = "${var.compartment_ocid}"
   vcn_id = "${oci_core_virtual_network.vcn.id}"
-  display_name = "RouteTable"
+  display_name = "ProdRouteTable"
   route_rules {
     cidr_block = "0.0.0.0/0"
-    network_entity_id = "${oci_core_internet_gateway.CustIG.id}"
+    network_entity_id = "${oci_core_internet_gateway.IG.id}"
   }
 }
 
@@ -49,10 +49,10 @@ resource "oci_core_route_table" "RouteTable" {
 
 # ------ Create a new security list to be used in the new subnet
 
-resource "oci_core_security_list" "Public-subnet1" {
+resource "oci_core_security_list" "ProdSecList-subnet1" {
 
   compartment_id = "${var.compartment_ocid}"
-  display_name = "Public-subnet1"
+  display_name = "ProdSecList-subnet1"
   vcn_id = "${oci_core_virtual_network.vcn.id}"
   egress_security_rules = [{
     protocol = "all"
@@ -90,17 +90,31 @@ resource "oci_core_security_list" "Public-subnet1" {
 
 # ------ Create a public subnet 1 in AD1 in the new VCN
 
-resource "oci_core_subnet" "public-subnet" {
+resource "oci_core_subnet" "ProdSubnetA-public-subnet1" {
 
   availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
   cidr_block = "10.0.1.0/24"
-  display_name = "public-subnet"
+  display_name = "ProdSubnetA-public-subnet1"
   dns_label = "subnet1"
   compartment_id = "${var.compartment_ocid}"
   vcn_id = "${oci_core_virtual_network.vcn.id}"
-  route_table_id = "${oci_core_route_table.RouteTable.id}"
-  security_list_ids = ["${oci_core_security_list.Public-subnet1.id}"]
+  route_table_id = "${oci_core_route_table.ProdRouteTable.id}"
+  security_list_ids = ["${oci_core_security_list.ProdSecList-subnet1.id}"]
   dhcp_options_id = "${oci_core_virtual_network.vcn.default_dhcp_options_id}"
 }
 
 
+# ------ Create a public subnet 2 in AD1 in the new VCN
+
+resource "oci_core_subnet" "ProdSubnetB-public-subnet2" {
+
+  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
+  cidr_block = "10.0.2.0/24"
+  display_name = "ProdSubnetB-public-subnet2"
+  dns_label = "subnet2"
+  compartment_id = "${var.compartment_ocid}"
+  vcn_id = "${oci_core_virtual_network.vcn.id}"
+  route_table_id = "${oci_core_route_table.ProdRouteTable.id}"
+  security_list_ids = ["${oci_core_security_list.ProdSecList-subnet1.id}"]
+  dhcp_options_id = "${oci_core_virtual_network.vcn.default_dhcp_options_id}"
+}

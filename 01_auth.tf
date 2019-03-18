@@ -7,7 +7,7 @@
      variable "compartment_ocid" {}
      variable "region" {}
      variable "AD" {}
-     #variable "BootStrapFile_ol7" {}
+     variable "BootStrapFile_ol7" {}
      variable "ssh_public_key_file_ol7" {}
      variable "authorized_ips" {}
 
